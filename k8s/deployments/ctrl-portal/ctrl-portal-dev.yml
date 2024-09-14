@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctrl-portal
+  namespace: ctrl-apps
+  labels:
+    app: portal
+spec:
+  selector:
+    matchLabels:
+      app: portal
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: portal
+    spec:
+      containers:
+        - name: portal
+          image: ghcr.io/sg-wireless/ctrl-portal-dev:1.11.0
+          # resources:
+          #   requests:
+          #     cpu: 200m
+          #     memory: 200Mi
+          #   limits:
+          #     cpu: 200m
+          #     memory: 200Mi
+          ports:
+          - containerPort: 3001
+            name: portal
+          # command: [ "sh", "-c", "--" ]
+          # args: [ "while true; do sleep 30; done;" ]
+          env:
+            - name: NODE_ENV
+              value: "development"
+            - name: APP_ENV
+              value: "development"
+            - name: DOCKER_DEV
+              value: "true"
+      imagePullSecrets:
+        - name: ghcr-login-secret

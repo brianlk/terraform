@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctrl-mqtt-broker
+  namespace: ctrl-apps
+  labels:
+    app: mqtt-broker
+spec:
+  ports:
+    - port: 1884
+      name: mqtt-broker
+  type: ClusterIP
+  selector:
+    app: mqtt-broker

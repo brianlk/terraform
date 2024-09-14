@@ -1,0 +1,193 @@
+#!/usr/bin/env bash
+
+# https://stackoverflow.com/a/5947802/1303387
+GREEN='\033[0;32m'
+LIGHT_PURPLE='\033[1;35m'
+LIGHT_GRAY='\033[1;37m'
+NC='\033[0m' # No Color
+
+
+starter() {
+    clear
+
+    cat << "EOF"
+                 ____   ______        ___          _
+                / ___| / ___\ \      / (_)_ __ ___| | ___  ___ ___
+                \___ \| |  _ \ \ /\ / /| | '__/ _ \ |/ _ \/ __/ __|
+                 ___) | |_| | \ V  V / | | | |  __/ |  __/\__ \__ \
+                |____/ \____|  \_/\_/  |_|_|  \___|_|\___||___/___/
+
+                             ____ _____ ____  _
+                            / ___|_   _|  _ \| |
+                           | |     | | | |_) | |
+                           | |___  | | |  _ <| |___
+                            \____| |_| |_| \_\_____|
+
+EOF
+
+}
+
+
+
+usage_initialize() {
+    printf "
+Usage:
+pybytes-initialize --pybytes-path <pybytes-working-directory> --sso-path <sso-working-directory> [--ssh] \n\t
+    --pybytes-path Working directory required\n\t
+    --sso-path working directory for sso required\n\t
+    --ssh use ssh for github clone \n\t
+\n"
+    exit 1;
+}
+
+
+usage_start() {
+    printf "
+Start Pybytes Usage:
+pybytes-start -a [<app-name> <app-name-2>]
+    -a | --apps run specific microservices
+
+    app-name:
+            pbbackend;
+                api;
+                pyauth;
+                pyconfig;
+                mqtt;
+                mqtt_proxy;
+                mqtt_broker;
+                lorabridge;
+                logger;
+                pystats;
+                pki;
+            pybytes;
+                pybytes_portal;
+                pybytes_admin_dashboard;
+                api;
+                pyauth;
+                pyconfig;
+                mqtt;
+                mqtt_proxy;
+                mqtt_broker;
+                lorabridge;
+                logger;
+                pystats;
+                pki;
+            public_api;
+    \n"
+    exit 1;
+}
+
+
+usage_update() {
+    printf "
+Usage: \n
+pybytes-update [-i, --remove-package-lock -same-branch] [-b <branch>] -a[<app-name1> <app-name2>] \n\t
+    -a | --apps update specific project [required]
+    -i | --npm-install  install npm packages [default false]
+    -b | --branch checkout branch name [default develop]
+    --remove-package-lock remove  package-lock.json [default false]
+    --same-branch keep same branch has high priority over branch name [-b | --branch] [default false]
+
+    app-name:
+            mqtt;
+            mqtt_proxy;
+            mqtt_broker;
+            pyauth;
+            pyconfig;
+            pki;
+            logger;
+            pystats;
+            api;
+            public_api;
+            pybytes_portal;
+            pybytes_admin_dashboard;
+            lorabridge;
+            all
+"
+    exit 1;
+}
+
+### Kill Process
+kill_pybytes_portal_process() {
+    npx kill-port 3001
+}
+
+kill_pybytes_admin_dasboard_process() {
+    npx kill-port 3016
+}
+
+kill_pybytes_pyauth_process() {
+    npx kill-port 3200
+}
+
+kill_pybytes_mqtt_process() {
+    npx kill-port 3003
+    npx kill-port 5678
+}
+
+kill_pybytes_mqtt_proxy_process() {
+    npx kill-port 3002
+    npx kill-port 1883
+}
+
+kill_pybytes_mqtt_broker_process() {
+    npx kill-port 1884
+}
+
+kill_pybytes_api_process() {
+    npx kill-port 3000
+}
+
+kill_pybytes_pyconfig_process() {
+    npx kill-port 5000
+}
+
+kill_pybytes_pki_process() {
+    npx kill-port 3014
+}
+
+kill_pybytes_backend_process() {
+    npx kill-port 3200
+    npx kill-port 3003
+    npx kill-port 5000
+    npx kill-port 3000
+    npx kill-port 3013
+    npx kill-port 3014
+}
+
+kill_pybytes_process() {
+    npx kill-port 3200
+    npx kill-port 3003
+    npx kill-port 5000
+    npx kill-port 3000
+    npx kill-port 3001
+    npx kill-port 3013
+    npx kill-port 3014
+    npx kill-port 3016
+    npx kill-port 3019
+}
+
+kill_lorabridge_process() {
+    npx kill-port 3015
+}
+
+kill_public_api_process() {
+    npx kill-port 3007
+}
+
+kill_pybytes_logger_process() {
+    npx kill-port 3013
+}
+
+kill_pybytes_pystats_process() {
+    npx kill-port 3019
+}
+
+kill_all_process() {
+    kill_pybytes_process
+    kill_public_api_process
+    kill_pybytes_logger_process
+    kill_pybytes_pystats_process
+    kill_pybytes_pki_process
+    kill_other_process
+}

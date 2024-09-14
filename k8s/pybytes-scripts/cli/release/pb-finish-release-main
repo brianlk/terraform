@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+git checkout main
+
+git pull origin main
+
+C_V=$(changelog-manager current)
+
+git tag -a v$C_V -m v$C_V
+
+git push --tags
+
+git pull && git checkout develop && git pull

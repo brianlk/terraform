@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctrl-mqtt-proxy
+  namespace: ctrl-apps
+  labels:
+    app: mqtt-proxy
+spec:
+  selector:
+    matchLabels:
+      app: mqtt-proxy
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: mqtt-proxy
+    spec:
+      containers:
+        - name: mqtt-proxy
+          image: ghcr.io/sg-wireless/mqtt-proxy-dev:0.1.0
+          # resources:
+          #   requests:
+          #     cpu: 200m
+          #     memory: 200Mi
+          #   limits:
+          #     cpu: 200m
+          #     memory: 200Mi
+          ports:
+          - containerPort: 3002
+            name: ws
+          - containerPort: 1883
+            name: unsecure
+          # command: [ "sh", "-c", "--" ]
+          # args: [ "while true; do sleep 30; done;" ]
+          env:
+            - name: NODE_ENV
+              value: "development"
+            - name: APP_ENV
+              value: "development"
+            - name: DOCKER_DEV
+              value: "true"
+      imagePullSecrets:
+        - name: ghcr-login-secret

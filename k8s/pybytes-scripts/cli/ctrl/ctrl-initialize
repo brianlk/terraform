@@ -1,0 +1,282 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+. $SCRIPT_DIR/ctrl-utils
+
+starter
+
+USE_SSH=true
+
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --ssh)
+      USE_SSH=true
+      shift # past argument
+      ;;
+    --pybytes-path)
+      PYBYTES_MICROSERVICES_DIR="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -h|--help)
+      usage_initialize
+      exit 1
+      ;;
+    -*|--*)
+      echo "Unknown option $1"
+      usage_initialize
+      exit 1
+      ;;
+  esac
+done
+
+if [ -z "$PYBYTES_MICROSERVICES_DIR" ]
+then
+      echo "Pybytes directory is required - found empty"
+      exit 0
+fi
+
+
+# check if git is installed
+echo "$(tput setaf 4)verify git"
+echo "$(tput setaf 7)"
+git_version=$(git --version)
+if ! [[ $git_version =~ "git version" ]];
+then
+    echo "$(tput setaf 1)git is required to continue initializing pybytes"
+    echo "$(tput setaf 4)https://git-scm.com/"
+    echo "$(tput setaf 7)"
+    exit
+fi
+
+# check if nvm is installed
+# This loads NVM
+echo "$(tput setaf 4)verify nvm"
+echo "$(tput setaf 7)"
+[[ -s $HOME/.nvm/nvm.sh ]] && . $HOME/.nvm/nvm.sh
+
+nvm_version=$(nvm --version)
+if ! [[ $nvm_version =~ "0." ]];
+then
+    echo "$(tput setaf 1)nvm is required to continue initializing pybytes"
+    echo "$(tput setaf 4)https://github.com/nvm-sh/nvm"
+    echo "$(tput setaf 7)"
+    exit
+fi
+
+# check if node is installed
+echo "$(tput setaf 4)verify node"
+echo "$(tput setaf 7)"
+node_version=$(node --version)
+if ! [[ $node_version =~ "v" ]];
+then
+    echo "$(tput setaf 1)node is required to continue initializing pybytes"
+    echo "$(tput setaf 4)https://github.com/nvm-sh/nvm"
+    echo "$(tput setaf 7)"
+    exit
+fi
+
+if [ ! -f ~/.pybytes-scripts/config ]; then
+  mkdir ~/.pybytes-scripts/
+  touch ~/.pybytes-scripts/config
+
+  echo "PYBYTES_MICROSERVICES_DIR='${PYBYTES_MICROSERVICES_DIR}'" > ~/.pybytes-scripts/config
+else
+    echo "~/.pybytes-scripts/config found make sure to check the config details"
+fi
+
+gitFullName=$(git config user.name)
+gitemail=$(git config user.email)
+echo "git will be configured using the following (Name: $gitFullName, Email:$gitemail): Y/N?"
+read approve
+
+approve=$(echo "$approve" | tr '[:upper:]' '[:lower:]')
+
+if ! [[ $approve = "y" ]];
+then
+  # config git
+  echo -n 'config git: FullName: '
+  read gitFullName
+
+  echo -n 'config git: email: '
+  read gitemail
+
+  echo "git will be configured using the following (Name: $gitFullName, Email:$gitemail): Y/N?"
+  read approve
+
+  approve=$(echo "$approve" | tr '[:upper:]' '[:lower:]')
+
+  if ! [[ $approve = "y" ]];
+  then
+    exit 1
+  fi
+
+  git config --global user.name "${gitFullName}"
+  git config --global user.email "${gitemail}"
+  git config --global pull.rebase false
+fi
+
+# clonning Pybytes MicroServices
+echo "$(tput setaf 4)clonning Pybytes MicroServices"
+echo "$(tput setaf 7)"
+echo "$(tput setaf 4)clonning Pybytes MicroServices"
+
+echo ""
+echo -e "$(tput setaf 2)clonning pconfig"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/pyconfig.git ${PYBYTES_MICROSERVICES_DIR}/pyconfig
+else
+  git clone https://github.com/pycom/pyconfig.git ${PYBYTES_MICROSERVICES_DIR}/pyconfig
+fi
+
+
+echo ""
+echo "$(tput setaf 2)clonning pyauth"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/pyauth.git ${PYBYTES_MICROSERVICES_DIR}/pyauth
+else
+  git clone https://github.com/pycom/pyauth.git ${PYBYTES_MICROSERVICES_DIR}/pyauth
+fi
+
+
+echo ""
+echo "$(tput setaf 2)clonning mqttserver"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/mqttserver.git ${PYBYTES_MICROSERVICES_DIR}/mqttserver
+else
+  git clone https://github.com/pycom/mqttserver.git ${PYBYTES_MICROSERVICES_DIR}/mqttserver
+fi
+
+echo ""
+echo "$(tput setaf 2)clonning lorabridge"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/lorabridge.git ${PYBYTES_MICROSERVICES_DIR}/lorabridge
+else
+  git clone https://github.com/pycom/lorabridge.git ${PYBYTES_MICROSERVICES_DIR}/lorabridge
+fi
+
+echo ""
+echo "$(tput setaf 2)clonning pybytes-api"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/pybytes-api.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-api
+else
+  git clone https://github.com/pycom/pybytes-api.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-api
+fi
+
+echo ""
+echo "$(tput setaf 2)clonning pybytes-public-api"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/pybytes-public-api.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-public-api
+else
+  git clone https://github.com/pycom/pybytes-public-api.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-public-api
+fi
+
+echo ""
+echo "$(tput setaf 2)clonning pybytes-api-utils"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/pybytes-api-utils.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-api-utils
+else
+  git clone https://github.com/pycom/pybytes-api-utils.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-api-utils
+fi
+
+echo ""
+echo "$(tput setaf 2)clonning pybytes-api-models"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/pybytes-api-models.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-api-models
+else
+  git clone https://github.com/pycom/pybytes-api-models.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-api-models
+fi
+
+echo ""
+echo "$(tput setaf 2)symbolic link ${PYBYTES_MICROSERVICES_DIR}"
+echo "$(tput setaf 7)"
+ln -s ${PYBYTES_MICROSERVICES_DIR}/pybytes-api-models  ${PYBYTES_MICROSERVICES_DIR}/pybytes-api/packages/api-models
+ln -s ${PYBYTES_MICROSERVICES_DIR}/pybytes-api-models  ${PYBYTES_MICROSERVICES_DIR}/pybytes-public-api/packages/api-models
+ln -s ${PYBYTES_MICROSERVICES_DIR}/pybytes-api-utils  ${PYBYTES_MICROSERVICES_DIR}/pybytes-api/packages/api-utils
+ln -s ${PYBYTES_MICROSERVICES_DIR}/pybytes-api-utils  ${PYBYTES_MICROSERVICES_DIR}/pybytes-public-api/packages/api-utils
+
+echo ""
+echo "$(tput setaf 2)clonning pybytes-logger"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/pybytes-logger.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-logger
+else
+  git clone https://github.com/pycom/pybytes-logger.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-logger
+fi
+
+echo ""
+echo "$(tput setaf 2)clonning pystats"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/pystats.git ${PYBYTES_MICROSERVICES_DIR}/pystats
+else
+  git clone https://github.com/pycom/pystats.git ${PYBYTES_MICROSERVICES_DIR}/pystats
+fi
+
+echo ""
+echo "$(tput setaf 2)clonning pybytes-pki"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/pybytes-pki.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-pki
+else
+  git clone https://github.com/pycom/pybytes-pki.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-pki
+fi
+
+echo ""
+echo "$(tput setaf 2)clonning pybytes portal"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/pybytes-portal.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-portal
+else
+  git clone https://github.com/pycom/pybytes-portal.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-portal
+fi
+
+echo ""
+echo "$(tput setaf 2)clonning pybytes admin dashboard"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/pybytes-admin-dashboard.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-admin-dashboard
+else
+  git clone https://github.com/pycom/pybytes-admin-dashboard.git ${PYBYTES_MICROSERVICES_DIR}/pybytes-admin-dashboard
+fi
+
+echo ""
+echo "$(tput setaf 2)clonning fw updater web"
+echo "$(tput setaf 7)"
+if [ "$USE_SSH" = true ]
+then
+  git clone git@github.com:pycom/fw-updater-web.git ${PYBYTES_MICROSERVICES_DIR}/fw-updater-web
+else
+  git clone https://github.com/pycom/fw-updater-web.git ${PYBYTES_MICROSERVICES_DIR}/fw-updater-web
+fi
+
+cat << "EOF"
+ ___             ___
+|      |\   |   |   \
+|___   | \  |   |    |
+|      |  \ |   |    |
+|___   |   \|   |___/
+
+EOF

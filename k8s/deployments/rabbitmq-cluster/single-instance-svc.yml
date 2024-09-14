@@ -1,0 +1,40 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctrl-rabbitmq
+  namespace: ctrl-apps
+  labels:
+    app: rabbitmq
+spec:
+  #clusterIP: None
+  type: ClusterIP
+  ports:
+    - name: amqp
+      port: 5672
+      protocol: TCP
+      targetPort: 5672
+    - name: prometheus
+      port: 15692
+      protocol: TCP
+      targetPort: 15692
+  selector:
+    app: rabbitmq
+---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: ctrl-rabbitmq-lb
+#   namespace: ctrl-apps
+#   labels:
+#     app: rabbitmq
+# spec:
+#   ports:
+#     - name: http
+#       port: 15672
+#       protocol: TCP
+#       targetPort: 15672
+#   selector:
+#     app: rabbitmq
+#   type: LoadBalancer
+

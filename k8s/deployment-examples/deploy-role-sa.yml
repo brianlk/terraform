@@ -1,0 +1,48 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rl93
+spec:
+  selector:
+    app: rl93
+  ports:
+  - name: name-of-service-port
+    protocol: TCP
+    port: 80
+    targetPort: 80
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ctrl-aws-access-sa
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::000609114283:role/default-prod-eks-ctrl-aws-access-role
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: rl93
+  name: rl93
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rl93
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: rl93
+    spec:
+      serviceAccountName: ctrl-aws-access-sa
+      containers:
+      - name: app
+        image: rockylinux:9.3
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo $(date -u) >> /data/out.txt; sleep 5; done"]

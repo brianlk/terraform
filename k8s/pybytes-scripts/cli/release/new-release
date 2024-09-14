@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+set -e
+
+cat << "EOF"
+ ____   ______        ___          _                  ____ _____ ____  _
+/ ___| / ___\ \      / (_)_ __ ___| | ___  ___ ___   / ___|_   _|  _ \| |
+\___ \| |  _ \ \ /\ / /| | '__/ _ \ |/ _ \/ __/ __| | |     | | | |_) | |
+ ___) | |_| | \ V  V / | | | |  __/ |  __/\__ \__ \ | |___  | | |  _ <| |___
+|____/ \____|  \_/\_/  |_|_|  \___|_|\___||___/___/  \____| |_| |_| \_\_____|
+
+EOF
+
+# https://stackoverflow.com/a/5947802/1303387
+GREEN='\033[0;32m'
+BLUE='\033[1;34m'
+RED='\033[1;31m'
+LIGHT_PURPLE='\033[1;35m'
+LIGHT_GRAY='\033[1;37m'
+NC='\033[0m' # No Color
+
+NO_NPM_VERSION=false
+
+usage() {
+    printf "
+        Usage: %s <reviewer-name>\n\t
+            -h check usage\n" "$0" 1>&2;
+    exit 1;
+}
+
+
+while getopts "nh" o; do
+    case "${o}" in
+        n)
+            NO_NPM_VERSION=true
+            ;;
+        h)
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+
+tput sc
+printf "${BLUE}Checking requirements...${NC}"
+
+if [ -z "$1" ]
+then
+    tput rc
+    tput el
+    echo -e "${RED}Github reviewer is required as first parameter${NC}"
+    exit
+fi
+
+if ! command -v npm &> /dev/null
+then
+    tput rc
+    tput el
+    echo -e "${RED}missing npm${NC}"
+    exit
+fi
+
+NPM_VERSION=$(npm --version)
+CHECKER=${NPM_VERSION::1}
+if ! [ "$CHECKER" -gt 7 ]
+then
+    tput rc
+    tput el
+    echo -e "${RED}npm 8.x and above is required${NC}"
+    exit
+fi
+
+if ! command -v changelog-manager &> /dev/null
+then
+    tput rc
+    tput el
+    echo -e "${RED}missing changelog-manager; pip install changelog-manager${NC}"
+    exit
+fi
+
+
+if ! command -v gh &> /dev/null
+then
+    tput rc
+    tput el
+    echo -e "${RED}missing github check: https://cli.github.com/${NC}"
+    exit
+fi
+
+GH_STATUS=$(gh auth status 2>&1 >"/dev/null")
+
+# get current logged in github user
+GH_USER=$(node -p "let ghStatus=null; process.argv.some((a)=>{if(a.split('=')[0]==='status') { ghStatus=a.split('=')[1]; return true;} }); ghStatus.substring(ghStatus.indexOf('as') + 3, ghStatus.indexOf('(') - 1)" "status=$GH_STATUS")
+
+tput rc
+tput el
+if [ -z "$GH_USER" ]
+then
+    echo -e "${RED}You must login to github${NC}"
+    exit
+fi
+echo -e "${BLUE}Logged in as ${GH_USER}${NC}"
+
+read -p "Continue? [Enter] → Yes, [Ctrl]+[C] → No."
+
+tput rc
+tput el
+
+echo -ne "${GREEN}✔️  Valid requirements 😄 ${NC}\n"
+tput sc
+
+
+BRANCH_NAME="release-v$(changelog-manager suggest)"
+printf  "${BLUE}creating new branch: ${GREEN}$BRANCH_NAME${NC}"
+
+git checkout -b "$BRANCH_NAME" --quiet
+
+if ! [ "$NO_NPM_VERSION" == true ]; then
+    tput rc
+    tput el
+    npm version $(changelog-manager suggest) --no-commit-hooks --no-git-tag-version
+
+    git commit -am "chore: update app version $BRANCH_NAME" --quiet
+fi
+
+
+tput rc; tput el; changelog-manager release
+
+git commit -am "docs: update changelogs for $BRANCH_NAME" --quiet
+
+printf  "${BLUE}Ready to push branch 🚀🚀🚀${NC}\n"
+
+git push --set-upstream origin "$BRANCH_NAME" --quiet
+
+gh pr create -B develop -a "$1" -r "$1" -b "release v-$(changelog-manager current)" -t "release v-$(changelog-manager current)"
+gh pr create -B master -a "$1" -r "$1" -b "release v-$(changelog-manager current)" -t "release v-$(changelog-manager current)"
+
+printf  "${GREEN}PR Created 😅${NC}\n"

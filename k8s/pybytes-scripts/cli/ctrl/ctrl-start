@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+
+. ctrl-utils
+
+starter
+
+APPS=()
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -a|--apps)
+      while ! [[ $2 = '' ]] && ! [[ $2 = --* ]]; do
+        APPS+=( "$2" )
+        shift
+      done
+      shift
+      ;;
+    -h|--help)
+      usage_start
+      exit 1
+      ;;
+    -*|--*)
+      echo "Unknown option $1"
+      usage_start
+      exit 1
+      ;;
+  esac
+done
+
+# load the configuration file
+if test -f ~/.pybytes-scripts/config ; then
+  . ~/.pybytes-scripts/config
+fi
+
+start_pybytes_portal() {
+    ttab -t pybytes-portal -G "cd ${PYBYTES_MICROSERVICES_DIR}/pybytes-portal; node --version; npm run start:dev";
+}
+
+start_pybytes_admin_dasboard() {
+    ttab -t pybytes-admin-dashboard -G "cd ${PYBYTES_MICROSERVICES_DIR}/pybytes-admin-dashboard; node --version; npm run dev";
+}
+
+start_pybytes_api() {
+    ttab -t pybytes-api -G "cd ${PYBYTES_MICROSERVICES_DIR}/pybytes-api; node --version; npm run dev";
+}
+
+start_pybytes_pyauth() {
+    ttab -t pyauth -G "cd ${PYBYTES_MICROSERVICES_DIR}/pyauth; node --version; npm run start:dev";
+}
+
+start_pybytes_pyconfig() {
+    ttab -t pyconfig -G "cd ${PYBYTES_MICROSERVICES_DIR}/pyconfig; node --version; npm run dev";
+}
+
+start_pybytes_mqtt() {
+    ttab -t mqttserver -G "cd ${PYBYTES_MICROSERVICES_DIR}/mqttserver; node --version; npm run start:dev";
+}
+
+start_pybytes_mqtt_proxy() {
+    ttab -t pybytes-mqtt-proxy -G "cd ${PYBYTES_MICROSERVICES_DIR}/pybytes-mqtt-proxy; node --version; npm run start:dev";
+}
+
+start_pybytes_mqtt_broker() {
+    ttab -t pybytes-mqtt-broker -G "cd ${PYBYTES_MICROSERVICES_DIR}/pybytes-mqtt-broker; node --version; npm run start:dev";
+}
+
+start_public_api() {
+    ttab -t public-api -G "cd ${PYBYTES_MICROSERVICES_DIR}/pybytes-public-api; node --version; npm run dev";
+}
+
+start_pybytes_pki() {
+    ttab -t pki -G "cd ${PYBYTES_MICROSERVICES_DIR}/pybytes-pki; node --version; npm run dev";
+}
+
+start_pybytes_logger() {
+    ttab -t logger -G "cd ${PYBYTES_MICROSERVICES_DIR}/pybytes-logger; node --version; npm run dev";
+}
+
+start_pybytes_pystats() {
+    ttab -t pystats -G "cd ${PYBYTES_MICROSERVICES_DIR}/pystats; node --version; npm run dev";
+}
+
+start_lorabridge() {
+    ttab -t lora-bridge -G "cd ${PYBYTES_MICROSERVICES_DIR}/lorabridge; node --version; npm run dev";
+}
+
+start_pybytes_backend() {
+    start_pybytes_pyauth
+    start_pybytes_pyconfig
+    start_pybytes_logger
+    start_pybytes_pystats
+    start_pybytes_pki
+    start_lorabridge
+    start_pybytes_mqtt
+    start_pybytes_mqtt_proxy
+    start_pybytes_mqtt_broker
+    start_pybytes_api
+}
+
+start_pybytes() {
+    start_pybytes_pyauth
+    start_pybytes_pyconfig
+    start_pybytes_pki
+    start_lorabridge
+    start_pybytes_logger
+    start_pybytes_pystats
+    start_pybytes_mqtt
+    start_pybytes_mqtt_proxy
+    start_pybytes_mqtt_broker
+    start_pybytes_api
+    start_pybytes_portal
+    start_pybytes_admin_dasboard
+}
+
+for i in "${APPS[@]}"
+do
+    while :
+    do
+        case $i in
+            pybytes)
+                kill_pybytes_process
+                start_pybytes
+                break
+                ;;
+            pbbackend)
+                kill_pybytes_backend_process
+                start_pybytes_backend
+                break
+                ;;
+            pybytes_portal)
+                kill_pybytes_portal_process
+                start_pybytes_portal
+                break
+                ;;
+            pybytes_admin_dashboard)
+                kill_pybytes_admin_dasboard_process
+                start_pybytes_admin_dasboard
+                break
+                ;;
+            api)
+                kill_pybytes_api_process
+                start_pybytes_api
+                break
+                ;;
+            pki)
+                kill_pybytes_pki_process
+                start_pybytes_pki
+                break
+                ;;
+            pyauth)
+                kill_pybytes_pyauth_process
+                start_pybytes_pyauth
+                break
+                ;;
+            pyconfig)
+                kill_pybytes_pyconfig_process
+                start_pybytes_pyconfig
+                break
+                ;;
+            mqtt)
+                kill_pybytes_mqtt_process
+                start_pybytes_mqtt
+                break
+                ;;
+            mqtt_broker)
+                kill_pybytes_mqtt_broker_process
+                start_pybytes_mqtt_broker_broker
+                break
+                ;;
+            mqtt_proxy)
+                kill_pybytes_mqtt_proxy_process
+                start_pybytes_mqtt_proxy
+                break
+                ;;
+            logger)
+                kill_pybytes_logger_process
+                start_pybytes_logger
+                break
+                ;;
+            pystats)
+                kill_pybytes_pystats_process
+                start_pybytes_pystats
+                break
+                ;;
+            lorabridge)
+                kill_lorabridge_process
+                start_lorabridge
+                break
+                ;;
+            public_api)
+                kill_open_api_process
+                start_public_api
+                break
+                ;;
+            *)
+                usage_start
+                break
+                ;;
+        esac
+    done
+done

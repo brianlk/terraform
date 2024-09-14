@@ -1,0 +1,360 @@
+#!/usr/bin/env bash
+
+. ctrl-utils
+
+starter
+
+APPS=()
+BRANCH='develop'
+CHOSEN_BRANCH='develop'
+SAME_BRANCH=false
+NPM_INSTALL=false
+REMOVE_PACKAGE_LOCK=false
+delete='all'
+
+# load the configuration file
+if test -f ~/.pybytes-scripts/config ; then
+  . ~/.pybytes-scripts/config
+fi
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -a|--apps)
+      while ! [[ $2 = '' ]] && ! [[ $2 = --* ]]; do
+        APPS+=( "$2" )
+        shift
+      done
+      shift
+      ;;
+    -b|--branch)
+      CHOSEN_BRANCH=${2}
+      shift # past argument
+      shift # past value
+      ;;
+    -i|--npm-install)
+      NPM_INSTALL=true
+      shift # past argument
+      ;;
+    --remove-package-lock)
+      REMOVE_PACKAGE_LOCK=true
+      shift # past argument
+      ;;
+    --same-branch)
+      SAME_BRANCH=true
+      shift # past argument
+      ;;
+    -h|--help)
+      usage_update
+      exit 1
+      ;;
+    -*|--*)
+      echo "Unknown option $1"
+      usage_update
+      exit 1
+      ;;
+  esac
+done
+
+len=${#APPS[@]}
+
+if (($len == 0))
+    then
+    echo "-a | --app parameter is required to have one project at least"
+    usage_update
+    exit 1;
+fi
+
+select_branch() {
+  if [ ${SAME_BRANCH} = true ]
+  then
+      BRANCH=$(git branch | awk '/^\*/{print $2}')
+  else
+      BRANCH=${CHOSEN_BRANCH}
+  fi
+
+  echo "branch: ${BRANCH}"
+}
+
+update_mqtt() {
+  echo -e "${LIGHT_PURPLE}Updating mqttserver...${NC}"
+  cd "${PYBYTES_MICROSERVICES_DIR}/mqttserver" || exit
+  select_branch
+  git checkout "$BRANCH" && git pull
+  if [ ${NPM_INSTALL} = true ]; then
+      echo -e "${LIGHT_GRAY}removing node_modules...${NC}"
+      rm -rf node_modules/
+      if [[ $REMOVE_PACKAGE_LOCK == true ]]; then
+          echo -e "${LIGHT_GRAY}removing package-lock.json...${NC}"
+          rm package-lock.json
+      fi
+      echo -e "${LIGHT_GRAY}npm install...${NC}"
+      npm install
+  fi
+
+  echo -e "${GREEN}Successfully updated mqttserver${NC}\n"
+}
+
+
+update_lorabridge() {
+  echo -e "${LIGHT_PURPLE}Updating lorabridge...${NC}"
+  cd "${PYBYTES_MICROSERVICES_DIR}/lorabridge" || exit
+  select_branch
+  git checkout "$BRANCH" && git pull
+  if [ ${NPM_INSTALL} = true ]; then
+      echo -e "${LIGHT_GRAY}removing node_modules...${NC}"
+      rm -rf node_modules/
+      if [[ $REMOVE_PACKAGE_LOCK == true ]]; then
+          echo -e "${LIGHT_GRAY}removing package-lock.json...${NC}"
+          rm package-lock.json
+      fi
+      echo -e "${LIGHT_GRAY}npm install...${NC}"
+      npm install
+  fi
+
+  echo -e "${GREEN}Successfully updated lorabridge${NC}\n"
+}
+
+update_pyauth() {
+  echo -e "${LIGHT_PURPLE}Updating pyauth...${NC}"
+  cd "${PYBYTES_MICROSERVICES_DIR}/pyauth" || exit
+  select_branch
+  git checkout "$BRANCH" && git pull
+  if [ ${NPM_INSTALL} = true ]; then
+      echo -e "${LIGHT_GRAY}removing node_modules...${NC}"
+      rm -rf node_modules/
+      if [[ $REMOVE_PACKAGE_LOCK == true ]]; then
+          echo -e "${LIGHT_GRAY}removing package-lock.json...${NC}"
+          rm package-lock.json
+      fi
+      echo -e "${LIGHT_GRAY}npm install...${NC}"
+      npm install
+  fi
+
+  echo -e "${GREEN}Successfully updated pyauth${NC}\n"
+}
+
+update_pyconfig() {
+  echo -e "${LIGHT_PURPLE}Updating pyconfig...${NC}"
+  cd "${PYBYTES_MICROSERVICES_DIR}/pyconfig" || exit
+  select_branch
+  git checkout "$BRANCH" && git pull
+  if [ ${NPM_INSTALL} = true ]; then
+      echo -e "${LIGHT_GRAY}removing node_modules...${NC}"
+      rm -rf node_modules/
+      if [[ $REMOVE_PACKAGE_LOCK == true ]]; then
+          echo -e "${LIGHT_GRAY}removing package-lock.json...${NC}"
+          rm package-lock.json
+      fi
+      echo -e "${LIGHT_GRAY}npm install...${NC}"
+      npm install
+  fi
+
+  echo -e "${GREEN}Successfully updated pyconfig${NC}\n"
+}
+
+update_pki() {
+  echo -e "${LIGHT_PURPLE}Updating pki...${NC}"
+  cd "${PYBYTES_MICROSERVICES_DIR}/pybytes-pki" || exit
+  select_branch
+  git checkout "$BRANCH" && git pull
+  if [ ${NPM_INSTALL} = true ]; then
+      echo -e "${LIGHT_GRAY}removing node_modules...${NC}"
+      rm -rf node_modules/
+      if [[ $REMOVE_PACKAGE_LOCK == true ]]; then
+          echo -e "${LIGHT_GRAY}removing package-lock.json...${NC}"
+          rm package-lock.json
+      fi
+      echo -e "${LIGHT_GRAY}npm install...${NC}"
+      npm install
+  fi
+
+  echo -e "${GREEN}Successfully updated pybytes-pki${NC}\n"
+}
+
+update_logger() {
+  echo -e "${LIGHT_PURPLE}Updating logger...${NC}"
+  cd "${PYBYTES_MICROSERVICES_DIR}/pybytes-logger" || exit
+  select_branch
+  git checkout "$BRANCH" && git pull
+  if [ ${NPM_INSTALL} = true ]; then
+      echo -e "${LIGHT_GRAY}removing node_modules...${NC}"
+      rm -rf node_modules/
+      if [[ $REMOVE_PACKAGE_LOCK == true ]]; then
+          echo -e "${LIGHT_GRAY}removing package-lock.json...${NC}"
+          rm package-lock.json
+      fi
+      echo -e "${LIGHT_GRAY}npm install...${NC}"
+      npm install
+  fi
+
+  echo -e "${GREEN}Successfully updated pybytes-logger${NC}\n"
+}
+
+update_pystats() {
+  echo -e "${LIGHT_PURPLE}Updating pystats...${NC}"
+  cd "${PYBYTES_MICROSERVICES_DIR}/pystats" || exit
+  select_branch
+  git checkout "$BRANCH" && git pull
+  if [ ${NPM_INSTALL} = true ]; then
+      echo -e "${LIGHT_GRAY}removing node_modules...${NC}"
+      rm -rf node_modules/
+      if [[ $REMOVE_PACKAGE_LOCK == true ]]; then
+          echo -e "${LIGHT_GRAY}removing package-lock.json...${NC}"
+          rm package-lock.json
+      fi
+      echo -e "${LIGHT_GRAY}npm install...${NC}"
+      npm install
+  fi
+
+  echo -e "${GREEN}Successfully updated pystats${NC}\n"
+}
+
+update_api() {
+  echo -e "${LIGHT_PURPLE}Updating pybytes-api...${NC}"
+  cd "${PYBYTES_MICROSERVICES_DIR}/pybytes-api" || exit
+  select_branch
+  git checkout "$BRANCH" && git pull
+  if [ ${NPM_INSTALL} = true ]; then
+      echo -e "${LIGHT_GRAY}removing node_modules...${NC}"
+      rm -rf node_modules/
+      if [[ $REMOVE_PACKAGE_LOCK == true ]]; then
+          echo -e "${LIGHT_GRAY}removing package-lock.json...${NC}"
+          rm package-lock.json
+      fi
+      echo -e "${LIGHT_GRAY}npm install...${NC}"
+      npm install
+
+  fi
+
+  echo -e "${GREEN}Successfully updated pybytes-api${NC}\n"
+}
+
+update_pybytes_pybytes_portal() {
+  echo -e "${LIGHT_PURPLE}Updating pybytes-portal...${NC}"
+  cd "${PYBYTES_MICROSERVICES_DIR}/pybytes-portal" || exit
+  select_branch
+  git checkout "$BRANCH"  && git pull
+  if [ ${NPM_INSTALL} = true ]; then
+      echo -e "${LIGHT_GRAY}removing node_modules...${NC}"
+      rm -rf node_modules/
+      if [[ $REMOVE_PACKAGE_LOCK == true ]]; then
+          echo -e "${LIGHT_GRAY}removing package-lock.json...${NC}"
+          rm package-lock.json
+      fi
+      echo -e "${LIGHT_GRAY}npm install...${NC}"
+      npm install
+  fi
+
+  echo -e "${GREEN}Successfully updated pybytes_portal${NC}\n"
+}
+
+update_pybytes_pybytes_admin_dashboard() {
+  echo -e "${LIGHT_PURPLE}Updating pybytes-admin-dashboard...${NC}"
+  cd "${PYBYTES_MICROSERVICES_DIR}/pybytes-admin-dashboard" || exit
+  select_branch
+  git checkout "$BRANCH"  && git pull
+  if [ ${NPM_INSTALL} = true ]; then
+      echo -e "${LIGHT_GRAY}removing node_modules...${NC}"
+      rm -rf node_modules/
+      if [[ $REMOVE_PACKAGE_LOCK == true ]]; then
+          echo -e "${LIGHT_GRAY}removing package-lock.json...${NC}"
+          rm package-lock.json
+      fi
+      echo -e "${LIGHT_GRAY}npm install...${NC}"
+      npm install
+  fi
+
+  echo -e "${GREEN}Successfully updated pybytes_admin_dashboard${NC}\n"
+}
+
+update_pybytes_public_api() {
+  echo -e "${LIGHT_PURPLE}Updating pybytes-public-api...${NC}"
+  cd "${PYBYTES_MICROSERVICES_DIR}/pybytes-public-api" || exit
+  select_branch
+  git checkout "$BRANCH"  && git pull
+  if [ ${NPM_INSTALL} = true ]; then
+      echo -e "${LIGHT_GRAY}removing node_modules...${NC}"
+      rm -rf node_modules/
+      if [[ $REMOVE_PACKAGE_LOCK == true ]]; then
+          echo -e "${LIGHT_GRAY}removing package-lock.json...${NC}"
+          rm package-lock.json
+      fi
+      echo -e "${LIGHT_GRAY}npm install...${NC}"
+      npm install
+  fi
+
+  echo -e "${GREEN}Successfully updated pybytes-open-api${NC}\n"
+}
+
+for i in "${APPS[@]}"
+do
+    while :
+    do
+        case $i in
+            mqtt)
+              update_mqtt
+              break
+              ;;
+            lorabridge)
+              update_lorabridge
+              break
+              ;;
+            pyauth)
+              update_pyauth
+              break
+              ;;
+            pyconfig)
+              update_pyconfig
+              break
+              ;;
+            pki)
+              update_pki
+              break
+              ;;
+            logger)
+              update_logger
+              break
+              ;;
+            pystats)
+              update_pystats
+              break
+              ;;
+            api)
+              update_api
+              break
+              ;;
+            public_api)
+              update_pybytes_public_api
+              break
+              ;;
+            pybytes_portal)
+              update_pybytes_pybytes_portal
+              break
+              ;;
+            pybytes_admin_dashboard)
+              update_pybytes_pybytes_admin_dashboard
+              break
+              ;;
+            all)
+              update_mqtt
+              update_coap
+              update_lorabridge
+              update_pyauth
+              update_pyconfig
+              update_pki
+              update_logger
+              update_pystats
+              update_api
+              update_pybytes_public_api
+              update_pybytes_pybytes_portal
+              update_pybytes_pybytes_admin_dashboard
+              break
+              ;;
+            *)
+              echo "${i} is unknown application"
+              usage_update
+              break
+              ;;
+        esac
+    done
+done

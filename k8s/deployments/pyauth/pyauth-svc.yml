@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctrl-pyauth
+  namespace: ctrl-apps
+  labels:
+    app: pyauth
+spec:
+  ports:
+    - port: 3200
+      name: pyauth
+    - port: 3201
+      name: grpc 
+  type: ClusterIP
+  selector:
+    app: pyauth

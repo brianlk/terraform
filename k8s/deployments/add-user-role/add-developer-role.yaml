@@ -1,0 +1,86 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: ctrl-apps
+  name: developer
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - secrets
+      - pods
+      - pods/log
+      - pods/exec
+      - services
+      - resourcequotas
+      - replicationcontrollers
+      - limitranges
+      - namespaces
+      - endpoints
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups:
+      - apps
+    resources:
+      - statefulsets
+      - daemonsets
+      - deployments
+      - deployments/scale
+      - replicasets
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/name: kube-state-metrics
+    app.kubernetes.io/version: 2.13.0
+  name: developer
+rules:
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    - secrets
+    - nodes
+    - pods
+    - services
+    - serviceaccounts
+    - resourcequotas
+    - replicationcontrollers
+    - limitranges
+    - persistentvolumeclaims
+    - persistentvolumes
+    - namespaces
+    - endpoints
+    verbs: [list, get, watch]
+  - apiGroups:
+      - apps
+    resources:
+      - statefulsets
+      - daemonsets
+      - deployments
+      - replicasets
+    verbs: [list, get, watch]
+  - apiGroups:
+    - storage.k8s.io
+    resources:
+    - storageclasses
+    - volumeattachments
+    verbs: [list, get, watch]
+  - apiGroups:
+    - networking.k8s.io
+    resources:
+    - networkpolicies
+    - ingressclasses
+    - ingresses
+    verbs: [list, get, watch]
+  - apiGroups:
+    - rbac.authorization.k8s.io
+    resources:
+    - clusterrolebindings
+    - clusterroles
+    - rolebindings
+    - roles
+    verbs: [list, get, watch]

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctrl-lorabridge
+  namespace: ctrl-apps
+  labels:
+    app: lorabridge
+spec:
+  selector:
+    matchLabels:
+      app: lorabridge
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: lorabridge
+    spec:
+      containers:
+        - name: lorabridge
+          image: ghcr.io/sg-wireless/lorabridge-dev:1.4.0
+          # resources:
+          #   requests:
+          #     cpu: 200m
+          #     memory: 200Mi
+          #   limits:
+          #     cpu: 200m
+          #     memory: 200Mi
+          ports:
+          - containerPort: 3012
+            name: grpc
+          - containerPort: 3015
+            name: lorabridge
+          # command: [ "sh", "-c", "--" ]
+          # args: [ "while true; do sleep 30; done;" ]
+          env:
+            - name: NODE_ENV
+              value: "development"
+            - name: APP_ENV
+              value: "development"
+            - name: DOCKER_DEV
+              value: "true"
+      imagePullSecrets:
+        - name: ghcr-login-secret

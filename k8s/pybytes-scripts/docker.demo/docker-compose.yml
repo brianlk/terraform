@@ -1,0 +1,165 @@
+version: "3.8"
+services:
+  ctrl-redis:
+    image: redis:7.2.0-alpine
+    container_name: ctrl-redis
+    restart: unless-stopped
+    networks:
+      - default
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  ctrl-rabbitmq:
+    image: "rabbitmq:3-management-alpine"
+    container_name: ctrl-rabbitmq
+    restart: unless-stopped
+    networks:
+      - default
+    ports:
+      - "127.0.0.1:15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ctrl
+      RABBITMQ_DEFAULT_PASS: ""
+    healthcheck:
+      test: "nc -z 127.0.0.1 15672"
+
+  ctrl-storage:
+    image: "minio/minio"
+    container_name: ctrl-storage
+    restart: unless-stopped
+    volumes:
+      - ".data/s3-storage:/usr/data"
+    working_dir: /usr/data
+    command: server --console-address ":9001" /usr/data
+    networks:
+      - default
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    environment:
+      MINIO_ACCESS_KEY: "AKIAIOSFODNN7EXAMPLE"
+      MINIO_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
+  ctrl-mongodb:
+    image: "mongo:7.0"
+    container_name: ctrl-mongodb
+    restart: unless-stopped
+    volumes:
+      - "./.data/mongodb:/data/db"
+    networks:
+      - default
+    ports:
+      - "127.0.0.1:27017:27017"
+
+  ctrl-postgres:
+    image: "postgres:16"
+    container_name: ctrl-postgres
+    restart: unless-stopped
+    volumes:
+      - "./.data/postgres:/data/db"
+    networks:
+      - default
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_PASSWORD: ""
+    healthcheck:
+      test: "echo 'SELECT version();' | psql -U postgres | grep '1 row'"
+
+  ctrl-mqtt-broker:
+    image: ghcr.io/pycom/pybytes-mqtt-broker:dev-0.2.0
+    container_name: ctrl-mqtt-broker
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+
+  ctrl-pyauth:
+    image: ghcr.io/pycom/pyauth:dev-2.1.0
+    container_name: ctrl-pyauth
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+    depends_on:
+      ctrl-rabbitmq:
+        condition: service_healthy
+
+  ctrl-mqtt-proxy:
+    image: ghcr.io/pycom/pybytes-mqtt-proxy:dev-0.2.0
+    container_name: ctrl-mqtt-proxy
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+    ports:
+      - "127.0.0.1:1883:1883"
+      - "127.0.0.1:3002:3002"
+    depends_on:
+      ctrl-rabbitmq:
+        condition: service_healthy
+
+  ctrl-mqttserver:
+    image: ghcr.io/pycom/mqttserver:dev-2.1.0
+    container_name: ctrl-mqttserver
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+    ports:
+      - "127.0.0.1:3003:3003"
+    healthcheck:
+      test: "nc -z 127.0.0.1 3103"
+    depends_on:
+      ctrl-rabbitmq:
+        condition: service_healthy
+
+  ctrl-management:
+    image: ghcr.io/pycom/ctrl-management:dev-1.5.0
+    container_name: ctrl-management
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+    ports:
+      - "127.0.0.1:3005:80"
+    depends_on:
+      ctrl-postgres:
+        condition: service_healthy
+
+  ctrl-gateway:
+    image: ghcr.io/pycom/ctrl-gateway:dev-1.6.0
+    container_name: ctrl-gateway
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      ctrl-mqttserver:
+        condition: service_healthy
+      ctrl-rabbitmq:
+        condition: service_healthy
+
+networks:
+  default:
+    driver: bridge

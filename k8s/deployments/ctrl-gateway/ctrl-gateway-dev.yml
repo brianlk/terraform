@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctrl-gateway
+  namespace: ctrl-apps
+  labels:
+    app: gateway
+spec:
+  selector:
+    matchLabels:
+      app: gateway
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: ghcr.io/sg-wireless/ctrl-gateway-dev:3.0.0a
+          # resources:
+          #   requests:
+          #     cpu: 200m
+          #     memory: 200Mi
+          #   limits:
+          #     cpu: 200m
+          #     memory: 200Mi
+          ports:
+          - containerPort: 3000
+            name: gateway
+          # command: [ "sh", "-c", "--" ]
+          # args: [ "while true; do sleep 30; done;" ]
+          env:
+            - name: NODE_ENV
+              value: "development"
+            - name: APP_ENV
+              value: "development"
+            - name: DOCKER_DEV
+              value: "true"
+      imagePullSecrets:
+        - name: ghcr-login-secret

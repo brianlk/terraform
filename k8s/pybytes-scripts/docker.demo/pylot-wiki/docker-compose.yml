@@ -1,0 +1,8 @@
+version: "3.8"
+name: pylot-wiki
+services:
+    pylot-wiki:
+        container_name: pylot-wiki
+        ports:
+            - 8080:80
+        image: ghcr.io/pycom/pylot-wiki:latest

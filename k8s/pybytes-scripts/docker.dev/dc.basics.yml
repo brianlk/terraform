@@ -1,0 +1,92 @@
+version: "3.8"
+services:
+  ctrl-redis:
+    image: redis:7.2.0-alpine
+    container_name: ctrl-redis
+    restart: unless-stopped
+    networks:
+      - default
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  ctrl-rabbitmq:
+    image: "rabbitmq:3-management-alpine"
+    container_name: ctrl-rabbitmq
+    restart: unless-stopped
+    networks:
+      - default
+    ports:
+      - "127.0.0.1:15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ctrl
+      RABBITMQ_DEFAULT_PASS: ""
+
+  ctrl-storage:
+    image: "minio/minio"
+    container_name: ctrl-storage
+    restart: unless-stopped
+    volumes:
+      - ".data/s3-storage:/usr/data"
+    working_dir: /usr/data
+    command: server --console-address ":9001" /usr/data
+    networks:
+      - default
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    environment:
+      MINIO_ACCESS_KEY: "AKIAIOSFODNN7EXAMPLE"
+      MINIO_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
+  ctrl-mongodb:
+    image: "mongo:7.0"
+    container_name: ctrl-mongodb
+    restart: unless-stopped
+    volumes:
+      - "./.data/mongodb:/data/db"
+    networks:
+      - default
+    ports:
+      - "127.0.0.1:27017:27017"
+
+  ctrl-mongo-express:
+    image: mongo-express
+    container_name: ctrl-mongo-express
+    restart: unless-stopped
+    networks:
+      - default
+    ports:
+      - "127.0.0.1:7000:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: "mongodb://ctrl-mongodb:27017/"
+
+  ctrl-postgres:
+    image: "postgres:16"
+    container_name: ctrl-postgres
+    restart: unless-stopped
+    volumes:
+      - "./.data/postgres:/data/db"
+    networks:
+      - default
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_PASSWORD: ""
+
+  ctrl-pgadmin4:
+    image: "dpage/pgadmin4"
+    container_name: ctrl-pgadmin4
+    restart: unless-stopped
+    volumes:
+      - "./.data/pgadmin4:/lib/pgadmin/storage/ctrl_sgwireless.com"
+    networks:
+      - default
+    ports:
+      - "127.0.0.1:8082:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "ctrl@sgwireless.com"
+      PGADMIN_DEFAULT_PASSWORD: ""
+
+networks:
+  default:
+    driver: bridge

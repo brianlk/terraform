@@ -1,0 +1,35 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctrl-portal
+  namespace: ctrl-apps
+  labels:
+    app: portal
+spec:
+  ports:
+    - name: portal
+      port: 3001
+      targetPort: 3001
+      protocol: TCP
+  type: ClusterIP
+  selector:
+    app: portal
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctrl-portal-lb
+  namespace: ctrl-apps
+  labels:
+    app: portal
+spec:
+  ports:
+    - name: http-to-portal
+      port: 80
+      targetPort: 3001
+      protocol: TCP
+  selector:
+    app: portal
+  type: LoadBalancer
+---

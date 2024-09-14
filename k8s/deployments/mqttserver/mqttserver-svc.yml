@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctrl-mqttserver
+  namespace: ctrl-apps
+  labels:
+    app: mqttserver
+spec:
+  ports:
+    - port: 3103
+      name: grpc 
+    - port: 3003
+      name: mqttserver
+  type: ClusterIP
+  selector:
+    app: mqttserver

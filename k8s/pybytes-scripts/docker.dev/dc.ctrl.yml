@@ -1,0 +1,170 @@
+version: "3.8"
+services:
+  ctrl-mqttserver:
+    build:
+      context: ${CTRL_MICROSERVICES_DIR}/mqttserver
+      dockerfile: ${CTRL_MICROSERVICES_DIR}/pybytes-scripts/docker.dev/Dockerfile
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: ctrl-mqttserver
+    restart: unless-stopped
+    working_dir: /usr/src/mqttserver
+    command: npm run start:dev
+    volumes:
+      - ${CTRL_MICROSERVICES_DIR}/mqttserver:/usr/src/mqttserver
+    networks:
+      - default
+    ports:
+      - 127.0.0.1:3003:3003
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+
+  ctrl-mqtt-broker:
+    build:
+      context: ${CTRL_MICROSERVICES_DIR}/pybytes-mqtt-broker
+      dockerfile: ${CTRL_MICROSERVICES_DIR}/pybytes-scripts/docker.dev/Dockerfile
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: ctrl-mqtt-broker
+    restart: unless-stopped
+    working_dir: /usr/src/mqtt-broker
+    command: npm run start:dev
+    volumes:
+      - ${CTRL_MICROSERVICES_DIR}/pybytes-mqtt-broker:/usr/src/mqtt-broker
+    networks:
+      - default
+    ports:
+      - 127.0.0.1:1884:1884
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+
+  ctrl-mqtt-proxy:
+    build:
+      context: ${CTRL_MICROSERVICES_DIR}/pybytes-mqtt-proxy
+      dockerfile: ${CTRL_MICROSERVICES_DIR}/pybytes-scripts/docker.dev/Dockerfile
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: ctrl-mqtt-proxy
+    restart: unless-stopped
+    working_dir: /usr/src/mqtt-proxy
+    command: npm run start:dev
+    volumes:
+      - ${CTRL_MICROSERVICES_DIR}/pybytes-mqtt-proxy:/usr/src/mqtt-proxy
+    networks:
+      - default
+    ports:
+      - 1883:1883
+      - 127.0.0.1:3002:3002
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+
+  ctrl-lorabridge:
+    build:
+      context: ${CTRL_MICROSERVICES_DIR}/lorabridge
+      dockerfile: ${CTRL_MICROSERVICES_DIR}/pybytes-scripts/docker.dev/Dockerfile
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: ctrl-lorabridge
+    restart: unless-stopped
+    working_dir: /usr/src/lorabridge
+    command: npm run start:dev
+    volumes:
+      - ${CTRL_MICROSERVICES_DIR}/lorabridge:/usr/src/lorabridge
+    networks:
+      - default
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+
+  ctrl-pyauth:
+    build:
+      context: ${CTRL_MICROSERVICES_DIR}/pyauth
+      dockerfile: ${CTRL_MICROSERVICES_DIR}/pybytes-scripts/docker.dev/Dockerfile
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: ctrl-pyauth
+    restart: unless-stopped
+    working_dir: /usr/src/pyauth
+    command: npm run start:dev
+    volumes:
+      - ${CTRL_MICROSERVICES_DIR}/pyauth:/usr/src/pyauth
+    networks:
+      - default
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+
+  ctrl-management:
+    build:
+      context: ${CTRL_MICROSERVICES_DIR}/ctrl-management
+      dockerfile: ${CTRL_MICROSERVICES_DIR}/pybytes-scripts/docker.dev/Dockerfile
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: ctrl-management
+    restart: unless-stopped
+    working_dir: /usr/src/ctrl-management
+    command: npm run start:dev
+    volumes:
+      - ${CTRL_MICROSERVICES_DIR}/ctrl-management:/usr/src/ctrl-management
+    networks:
+      - default
+    ports:
+      - 127.0.0.1:3005:80
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+
+  ctrl-gateway:
+    build:
+      context: ${CTRL_MICROSERVICES_DIR}/ctrl-gateway
+      dockerfile: ${CTRL_MICROSERVICES_DIR}/pybytes-scripts/docker.dev/Dockerfile
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: ctrl-gateway
+    restart: unless-stopped
+    working_dir: /usr/src/ctrl-gateway
+    command: npm run start:dev
+    volumes:
+      - ${CTRL_MICROSERVICES_DIR}/ctrl-gateway:/usr/src/ctrl-gateway
+    networks:
+      - default
+    ports:
+      - 127.0.0.1:3000:3000
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+
+  ctrl-portal:
+    build:
+      context: ${CTRL_MICROSERVICES_DIR}/ctrl-portal
+      dockerfile: ${CTRL_MICROSERVICES_DIR}/pybytes-scripts/docker.dev/Dockerfile
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: ctrl-portal
+    restart: unless-stopped
+    working_dir: /usr/src/ctrl-portal
+    command: npm run start:dev
+    volumes:
+      - ${CTRL_MICROSERVICES_DIR}/ctrl-portal:/usr/src/ctrl-portal
+    networks:
+      - default
+    ports:
+      - 3001:3001
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      DOCKER_DEV: true
+
+networks:
+  default:
+    driver: bridge

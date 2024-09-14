@@ -1,0 +1,16 @@
+.DS_Store
+.history
+
+node_modules
+
+development/docker/.env
+
+#terraform files
+.terraform*
+__pycache__
+
+**build**
+**dist**
+**egg-info**
+*.pyc
+sftp-config.json

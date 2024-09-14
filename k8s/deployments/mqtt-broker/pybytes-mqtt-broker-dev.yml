@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctrl-mqtt-broker
+  namespace: ctrl-apps
+  labels:
+    app: mqtt-broker
+spec:
+  selector:
+    matchLabels:
+      app: mqtt-broker
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: mqtt-broker
+    spec:
+      containers:
+        - name: mqtt-broker
+          image: ghcr.io/sg-wireless/mqtt-broker-dev:0.1.0
+          # resources:
+          #   requests:
+          #     cpu: 200m
+          #     memory: 200Mi
+          #   limits:
+          #     cpu: 200m
+          #     memory: 200Mi
+          ports:
+          - containerPort: 1884
+            name: mqttport
+          # command: [ "sh", "-c", "--" ]
+          # args: [ "while true; do sleep 30; done;" ]
+          env:
+            - name: NODE_ENV
+              value: "development"
+            - name: APP_ENV
+              value: "development"
+            - name: DOCKER_DEV
+              value: "true"
+      imagePullSecrets:
+        - name: ghcr-login-secret

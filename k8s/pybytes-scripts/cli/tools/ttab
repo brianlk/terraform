@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+TITLE=""
+COMLINE=""
+
+
+usage() {
+    printf "
+ttab Usage:
+    ttab [-t ] [-G \"command\"]
+        -t tab title
+        -G command to execute
+"
+    exit 1;
+}
+
+
+
+while getopts ":t:G:h" o; do
+    case "${o}" in
+        t)
+            TITLE=${OPTARG}
+            ;;
+        G)
+            COMLINE=${OPTARG}
+            ;;
+        h)
+            usage
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if test -z "$COMLINE"
+then
+    gnome-terminal --tab --title="$TITLE"
+else
+    gnome-terminal --tab --title="$TITLE" -- bash -ic "$COMLINE; bash"
+fi

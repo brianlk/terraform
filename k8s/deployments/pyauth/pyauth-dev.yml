@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctrl-pyauth
+  namespace: ctrl-apps
+  labels:
+    app: pyauth
+spec:
+  selector:
+    matchLabels:
+      app: pyauth
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: pyauth
+    spec:
+      containers:
+        - name: pyauth
+          image: ghcr.io/sg-wireless/pyauth-dev:2.0.0
+          # resources:
+          #   requests:
+          #     cpu: 200m
+          #     memory: 200Mi
+          #   limits:
+          #     cpu: 200m
+          #     memory: 200Mi
+          ports:
+          - containerPort: 3200
+            name: pyauth
+          - containerPort: 3201
+            name: grpc
+          # command: [ "sh", "-c", "--" ]
+          # args: [ "while true; do sleep 30; done;" ]
+          env:
+            - name: NODE_ENV
+              value: "development"
+            - name: APP_ENV
+              value: "development"
+            - name: DOCKER_DEV
+              value: "true"
+      imagePullSecrets:
+        - name: ghcr-login-secret

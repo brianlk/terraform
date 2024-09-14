@@ -1,0 +1,91 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-configmap
+  namespace: ctrl-apps
+  # Add labels and annotations as per your requirements
+data:
+  definitions.json: |-
+    # RabbitMQ definitions go here
+  enabled_plugins: '[rabbitmq_peer_discovery_k8s, rabbitmq_prometheus, rabbitmq_management].'
+  rabbitmq.conf: |
+    listeners.tcp.default = 5672
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ctrl-rabbitmq
+  namespace: ctrl-apps
+  labels:
+    app: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3.9.22-management  # Replace with your custom Docker image
+          ports:
+            - name: amqp
+              containerPort: 5672
+              protocol: TCP
+            - name: http
+              containerPort: 15672
+              protocol: TCP
+            - name: prometheus
+              containerPort: 15692
+              protocol: TCP
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - rabbitmq-diagnostics
+          #       - status
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 60
+          #   timeoutSeconds: 15
+          # readinessProbe:
+          #   exec:
+          #     command:
+          #       - rabbitmq-diagnostics
+          #       - ping
+          #   initialDelaySeconds: 20
+          #   periodSeconds: 60
+          #   timeoutSeconds: 10
+          volumeMounts:
+            - name: rabbitmq-volume
+              mountPath: /var/lib/rabbitmq/mnesia
+            - name: config-volume
+              mountPath: /etc/rabbitmq
+          resources:
+            requests:
+              cpu: 300m
+              memory: 300Mi
+            limits:
+              cpu: 300m
+              memory: 300Mi
+      volumes:
+        - name: config-volume
+          configMap:
+            name: rabbitmq-configmap
+            items:
+              - key: rabbitmq.conf
+                path: rabbitmq.conf
+              - key: enabled_plugins
+                path: enabled_plugins
+  volumeClaimTemplates:
+    - metadata:
+        name: rabbitmq-volume
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: gp2
+        resources:
+          requests:
+            storage: 2Gi
+

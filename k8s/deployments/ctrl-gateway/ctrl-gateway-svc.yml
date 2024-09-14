@@ -1,0 +1,35 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctrl-gateway
+  namespace: ctrl-apps
+  labels:
+    app: gateway
+spec:
+  ports:
+    - name: gateway
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+  type: ClusterIP
+  selector:
+    app: gateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctrl-gateway-lb
+  namespace: ctrl-apps
+  labels:
+    app: gateway
+spec:
+  ports:
+    - name: http-to-gateway
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: gateway
+  type: LoadBalancer
+---
